@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0A3161" />
+  <title>FSW × Ainushamsi | Combined Gap Register</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --navy: #0A3161;
+      --navy-light: #124a8a;
+      --gold: #D4AF37;
+      --gold-light: #F5E6C8;
+      --bg: #f0f3f7;
+      --card: #ffffff;
+      --border: #c5cdd8;
+      --text: #1a2332;
+      --muted: #5a6577;
+      --danger: #b91c1c;
+      --success: #157a3c;
+      --radius: 10px;
+      --shadow: 0 4px 16px rgba(10, 49, 97, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding-bottom: 100px;
+      min-height: 100vh;
+    }
+    .app-header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: #fff;
+      padding: 14px 16px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    }
+    .app-header h1 { font-size: 1.1rem; font-weight: 700; }
+    .app-header .sub { font-size: 0.75rem; opacity: 0.9; margin-top: 2px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .badge {
+      background: rgba(255,255,255,0.15);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+    .container { max-width: 920px; margin: 0 auto; padding: 14px; }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .card-head {
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 14px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-body { padding: 14px; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 3px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      background: #fff;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(10, 49, 97, 0.12);
+    }
+    textarea { min-height: 56px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 640px) {
+      .row, .row-3 { grid-template-columns: 1fr; }
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 11px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: 0.15s;
+    }
+    .btn-primary { background: var(--navy); color: #fff; }
+    .btn-primary:hover { background: var(--navy-light); }
+    .btn-gold { background: var(--gold); color: #1a1508; }
+    .btn-outline { background: #fff; border: 1.5px solid var(--border); color: var(--text); }
+    .btn-danger { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-sm { padding: 7px 12px; font-size: 0.8rem; }
+    .btn-block { width: 100%; }
+    .asset-card { border: 2px solid var(--navy); }
+    .asset-card .card-head { background: linear-gradient(135deg, #0A3161, #1a4a7a); }
+    .nc-block {
+      background: #f7f9fc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+      position: relative;
+    }
+    .nc-block h4 {
+      font-size: 0.82rem;
+      color: var(--navy);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nc-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .toolbar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      gap: 8px;
+      z-index: 90;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+    }
+    .toolbar .btn { flex: 1; }
+    .sig-wrap {
+      border: 2px solid var(--navy);
+      border-radius: 8px;
+      background: #fff;
+      position: relative;
+    }
+    .sig-wrap canvas { width: 100%; height: 140px; display: block; touch-action: none; }
+    .sig-tools { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+    .hidden { display: none !important; }
+    .section-note {
+      background: #eef4fb;
+      border-left: 4px solid var(--navy);
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      color: #1e3a5f;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 12px;
+    }
+    .toast {
+      position: fixed;
+      top: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; }
+    .toast.ok { background: var(--success); }
+    .toast.err { background: var(--danger); }
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(10,49,97,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      color: #fff;
+      z-index: 300;
+    }
+    .overlay.show { display: flex; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-hint {
+      text-align: center;
+      color: var(--muted);
+      padding: 24px 12px;
+      font-size: 0.9rem;
+    }
+    .sig-panel {
+      background: #eef4fb;
+      border: 1.5px solid var(--navy);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .sig-panel h3 {
+      color: var(--navy);
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    .preview-sig {
+      max-height: 80px;
+      max-width: 100%;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <h1>FORECOURT WORKS LIMITED × AINUSHAMSI ENERGY</h1>
+    <div class="sub">Combined Equipment Condition &amp; Regulatory Compliance Gap Register</div>
+    <div class="badges">
+      <span class="badge" id="badge-doc">DRAFT</span>
+      <span class="badge" id="badge-station">—</span>
+      <span class="badge" id="badge-assets">0 assets</span>
+      <span class="badge" id="badge-ncs">0 NCs</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- META -->
+    <div class="card" id="meta-card">
+      <div class="card-head">1 · Document &amp; Station Details</div>
+      <div class="card-body">
+        <div class="row">
+          <div class="form-group">
+            <label>Document Ref</label>
+            <input type="text" id="doc-ref" value="FSW-ASE-GAP-2026-001" />
+          </div>
+          <div class="form-group">
+            <label>Inspection Date</label>
+            <input type="date" id="insp-date" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group">
+            <label>Station</label>
+            <select id="station-select">
+              <option value="Pumwani">Pumwani</option>
+              <option value="Garissa">Garissa</option>
+              <option value="Eldoret">Eldoret</option>
+              <option value="Kisumu">Kisumu</option>
+              <option value="Mariakani Weighbridge">Mariakani Weighbridge</option>
+              <option value="Old Mariakani">Old Mariakani</option>
+              <option value="Kaloleni">Kaloleni</option>
+              <option value="Other">Other (type below)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Station Name (editable)</label>
+            <input type="text" id="station-name" value="PUMWANI STATION" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group">
+            <label>Station Code</label>
+            <input type="text" id="station-code" value="PUMWANI" />
+          </div>
+          <div class="form-group">
+            <label>FSW Inspector</label>
+            <input type="text" id="fsw-inspector" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Client Site Representative</label>
+          <input type="text" id="client-rep" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ASSETS -->
+    <div class="card">
+      <div class="card-head">
+        <span>2 · Assets &amp; Non-Conformances</span>
+        <button type="button" class="btn btn-gold btn-sm" id="btn-add-asset">+ Asset</button>
+      </div>
+      <div class="card-body">
+        <div class="section-note">
+          Add each asset once. Use <strong>+ NC</strong> under an asset to record multiple non-conformances,
+          each with its own required action and work order. Equipment identity is not repeated on the PDF.
+        </div>
+        <div id="assets-container"></div>
+        <div class="empty-hint" id="assets-empty">No assets yet. Press <strong>+ Asset</strong> to begin.</div>
+      </div>
+    </div>
+
+    <!-- SIGN-OFF (revealed on Finish) -->
+    <div class="card hidden" id="signoff-card">
+      <div class="card-head">3 · Joint Agreement &amp; Sign-Off</div>
+      <div class="card-body">
+        <div class="section-note">
+          Draw on the pad or upload a signature image. Either method embeds in the same place on the PDF.
+        </div>
+
+        <div class="sig-panel">
+          <h3>Ainushamsi Energy Limited — Client Site Representative</h3>
+          <div class="row">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="client-sign-name" />
+            </div>
+            <div class="form-group">
+              <label>Designation</label>
+              <input type="text" id="client-sign-desig" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="client-sign-date" />
+          </div>
+          <div class="form-group">
+            <label>Signature (draw)</label>
+            <div class="sig-wrap"><canvas id="sig-client"></canvas></div>
+            <div class="sig-tools">
+              <button type="button" class="btn btn-outline btn-sm" data-clear-sig="sig-client">Clear</button>
+              <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+                Attach file
+                <input type="file" id="client-sig-file" accept="image/*" hidden />
+              </label>
+            </div>
+            <img id="client-sig-preview" class="preview-sig hidden" alt="Client signature preview" />
+          </div>
+        </div>
+
+        <div class="sig-panel">
+          <h3>Forecourt Works Limited — Lead Inspector</h3>
+          <div class="row">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="fsw-sign-name" />
+            </div>
+            <div class="form-group">
+              <label>Designation</label>
+              <input type="text" id="fsw-sign-desig" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="fsw-sign-date" />
+          </div>
+          <div class="form-group">
+            <label>Signature (draw)</label>
+            <div class="sig-wrap"><canvas id="sig-fsw"></canvas></div>
+            <div class="sig-tools">
+              <button type="button" class="btn btn-outline btn-sm" data-clear-sig="sig-fsw">Clear</button>
+              <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+                Attach file
+                <input type="file" id="fsw-sig-file" accept="image/*" hidden />
+              </label>
+            </div>
+            <img id="fsw-sig-preview" class="preview-sig hidden" alt="FSW signature preview" />
+          </div>
+        </div>
+
+        <div class="row-3">
+          <div class="form-group"><label>Total gaps</label><input type="text" id="sum-total" readonly /></div>
+          <div class="form-group"><label>Critical</label><input type="text" id="sum-crit" readonly /></div>
+          <div class="form-group"><label>High</label><input type="text" id="sum-high" readonly /></div>
+        </div>
+        <div class="row-3">
+          <div class="form-group"><label>Medium</label><input type="text" id="sum-med" readonly /></div>
+          <div class="form-group"><label>Low</label><input type="text" id="sum-low" readonly /></div>
+          <div class="form-group"><label>WOs raised</label><input type="text" id="sum-wo" readonly /></div>
+        </div>
+
+        <button type="button" class="btn btn-success btn-block" id="btn-generate-pdf" style="margin-top:12px;">
+          📄 Generate &amp; Share A1 PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar" id="main-toolbar">
+    <button type="button" class="btn btn-outline" id="btn-save-draft">💾 Save Draft</button>
+    <button type="button" class="btn btn-primary" id="btn-finish">Finish &amp; Share as PDF →</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="overlay" id="overlay">
+    <div class="spinner"></div>
+    <div id="overlay-text">Generating PDF…</div>
+  </div>
+
+  <script src="logos.js"></script>
+  <script src="app-gap-register.js"></script>
+</body>
+</html>
